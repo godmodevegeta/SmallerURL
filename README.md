@@ -44,7 +44,12 @@ Let's design a high-scale URL shortener. This is a classic scalability problem w
     *   **User Agent:** Track the user agent of the clicks.
     *   **Store Analytics Data:** Store analytics data in a separate database (e.g., a time-series database like InfluxDB or a data warehouse like Snowflake) or in a NoSQL database optimized for writes.
 
-6.  **Error Handling and Logging:**  (Same principles as in the signup API).
+6.  **Error Handling and Logging:**
+
+    *   **Structured Logging:**  Use structured logging (e.g., JSON logging) to make it easier to search and analyze logs.  Include relevant information, such as request ID, user ID (if available), error message, and stack trace.
+    *   **Centralized Logging:**  Send logs to a centralized logging system (e.g., ELK stack, Splunk) for monitoring and analysis.
+    *   **Meaningful Error Responses:**  Return meaningful error messages to the client (without exposing sensitive information).  Use standard HTTP status codes to indicate the type of error.
+    *   **Circuit Breakers:**  Implement circuit breakers for external dependencies (e.g., database, email service) to prevent cascading failures.
 
 7.  **Asynchronous Tasks:**
 
