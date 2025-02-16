@@ -1,18 +1,24 @@
 from flask import Flask, request, redirect
-from dotenv import dotenv_values
+# from dotenv import dotenv_values
+from supabaseConfig import domain, numberOfCharacters, supabaseClient
 import random, re
+# import logging
+
+# logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-config = dotenv_values(".env")
+# config = dotenv_values(".env")
 smallToLong = {}
 longToSmall = {}
-numberOfCharacters = int(config.get('CHARACTERLIMIT'))
-domain = str(config.get('DOMAIN'))
+numberOfCharacters = numberOfCharacters
+domain = domain
 
 @app.route("/api/hello/")
 def hello():
-    return "<h1>Hello there!</h1>"
+    response = supabaseClient.table("planets").select("*").execute()
+    print("The type is: ", type(response))
+    return response
 
 @app.route("/api/shorten", methods=["GET", "POST"])
 def shorten():
