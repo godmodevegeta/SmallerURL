@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 smallToLong = {}
 longToSmall = {}
+numberOfCharacters: int = int(10)
 
 @app.route("/api/hello/")
 def hello():
@@ -38,7 +39,7 @@ def redirectTo(smallURL):
 def generateSmallURL():
     randomString = random.random()
     # print(randomString , " is type " , type(randomString))
-    randomString = int(randomString * 10)
+    randomString = int(randomString * numberOfCharacters)
     randomString = str(abs(randomString))
     if (smallToLong.get(randomString)):
         print(f"smallURL {randomString} already exists in map")
