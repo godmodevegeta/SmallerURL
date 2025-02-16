@@ -1,11 +1,13 @@
 from flask import Flask, request, redirect
+from dotenv import dotenv_values
 import random
 
 app = Flask(__name__)
 
+config = dotenv_values(".env")
 smallToLong = {}
 longToSmall = {}
-numberOfCharacters: int = int(10)
+numberOfCharacters: int = int(config.get('CHARACTERLIMIT'))
 
 @app.route("/api/hello/")
 def hello():
