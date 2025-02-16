@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect
 from dotenv import dotenv_values
-import random
+import random, re
 
 app = Flask(__name__)
 
@@ -18,6 +18,9 @@ def hello():
 def shorten():
     if request.method == 'POST':
         longURL = request.get_json().get("longURL")
+        if not(is_valid_url(longURL)):
+            return "URL not valid", 400
+        
         if (longToSmall.get(longURL)):
             print (f"mapping for {longURL} already exists")
             return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
@@ -48,3 +51,13 @@ def generateSmallURL():
         print(f"smallURL {randomString} already exists in map")
         return generateSmallURL()
     return randomString
+
+def is_valid_url(url: str) -> bool:
+    pattern = re.compile(
+        r'^(https?:\/\/)?'  # http:// or https://
+        r'(([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,6})'  # domain name
+        r'(\/[a-zA-Z0-9@:%._\+~#=]*)*'  # path
+        r'(\?[a-zA-Z0-9@:%._\+~#&=]*)?'  # query string
+        r'(#.*)?$'  # fragment locator
+    )
+    return re.match(pattern, url) is not None
