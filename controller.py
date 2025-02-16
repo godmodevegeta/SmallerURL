@@ -18,6 +18,7 @@ def shorten():
             print (f"mapping for {longURL} already exists")
             return f"found url {longURL} and generated smallURL http://127.0.0.1:5000/api/redirect/{longToSmall[longURL]}\n"
         smallURL = generateSmallURL()
+        print(f'smallURL generated: {smallURL}\n')
         longToSmall[longURL] = smallURL
         smallToLong[smallURL] = longURL
         return f"found url {longURL} and generated smallURL http://127.0.0.1:5000/api/redirect/{longToSmall[longURL]}\n"
@@ -35,7 +36,11 @@ def redirectTo(smallURL):
   
 
 def generateSmallURL():
-    randomString = random.gauss()
+    randomString = random.random()
     # print(randomString , " is type " , type(randomString))
-    noDecimal = int(randomString * 100000)
-    return str(abs(noDecimal))
+    randomString = int(randomString * 10)
+    randomString = str(abs(randomString))
+    if (smallToLong.get(randomString)):
+        print(f"smallURL {randomString} already exists in map")
+        return generateSmallURL()
+    return randomString
