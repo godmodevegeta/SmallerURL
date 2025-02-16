@@ -7,7 +7,7 @@ app = Flask(__name__)
 config = dotenv_values(".env")
 smallToLong = {}
 longToSmall = {}
-numberOfCharacters: int = int(config.get('CHARACTERLIMIT'))
+numberOfCharacters = int(config.get('CHARACTERLIMIT'))
 
 @app.route("/api/hello/")
 def hello():
