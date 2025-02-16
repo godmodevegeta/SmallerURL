@@ -1,5 +1,5 @@
-from flask import Flask, request
-
+from flask import Flask, request, redirect
+import random
 
 app = Flask(__name__)
 
@@ -22,9 +22,18 @@ def shorten():
     else:
         return "<h1>Please input URL</h1>", 200
 
-# @app.route("/api/redirect/")
-# def redirect():
-
+@app.route("/api/redirect/<smallURL>")
+def redirectTo(smallURL):
+    print ("searching for longURL for smallURL")
+    longURL = smallToLong.get(smallURL)
+    # print(smallToLong)
+    print ("found longURL: {longURL}".format(longURL=longURL))
+    return redirect(longURL)
+    
+    
 
 def generateSmallURL():
-    return "smallxyx"
+    randomString = random.gauss()
+    # print(randomString , " is type " , type(randomString))
+    noDecimal = int(randomString * 100000)
+    return str(abs(noDecimal))
