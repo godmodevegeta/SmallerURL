@@ -17,7 +17,13 @@ def hello():
 @app.route("/api/shorten", methods=["GET", "POST"])
 def shorten():
     if request.method == 'POST':
-        longURL = request.get_json().get("longURL")
+        try:
+            longURL = request.get_json().get("longURL")
+            if longURL is None:
+                raise TypeError("longURL not found")
+        except Exception as e:
+            print ("INSIDE TRY-EXCEPT BLOCK")
+            return "Unable to find longURL, please check request body\n",400
         if not(is_valid_url(longURL)):
             return "URL not valid", 400
         
@@ -29,6 +35,7 @@ def shorten():
         longToSmall[longURL] = smallURL
         smallToLong[smallURL] = longURL
         return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
+        
     
     else:
         return "<h1>Please input URL</h1>", 200
