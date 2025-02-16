@@ -14,10 +14,13 @@ def hello():
 def shorten():
     if request.method == 'POST':
         longURL = request.get_json().get("longURL")
+        if (longToSmall.get(longURL)):
+            print (f"mapping for {longURL} already exists")
+            return f"found url {longURL} and generated smallURL http://127.0.0.1:5000/api/redirect/{longToSmall[longURL]}\n"
         smallURL = generateSmallURL()
-        longToSmall[longURL] = "http://127.0.0.1:5000/api/redirect/" + smallURL
+        longToSmall[longURL] = smallURL
         smallToLong[smallURL] = longURL
-        return f"found url {longURL} and generated smallURL {longToSmall[longURL]}\n"
+        return f"found url {longURL} and generated smallURL http://127.0.0.1:5000/api/redirect/{longToSmall[longURL]}\n"
     
     else:
         return "<h1>Please input URL</h1>", 200
@@ -29,8 +32,7 @@ def redirectTo(smallURL):
     # print(smallToLong)
     print ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
-    
-    
+  
 
 def generateSmallURL():
     randomString = random.gauss()
