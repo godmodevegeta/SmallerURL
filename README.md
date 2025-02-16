@@ -6,8 +6,8 @@ Let's design a high-scale URL shortener. This is a classic scalability problem w
 
 1.  **API Endpoints:**
 
-    *   **Shorten URL (POST /shorten):**  Accepts a long URL and returns a short URL.
-    *   **Redirect (GET /{short_code}):**  Accepts a short code and redirects to the corresponding long URL.
+    *   **Shorten URL (POST /api/shorten):**  Accepts a long URL and returns a short URL.
+    *   **Redirect (GET /api/redirect/{short_code}):**  Accepts a short code and redirects to the corresponding long URL.
     *   **(Optional) Analytics (GET /analytics/{short_code}):**  Returns statistics about a short URL (e.g., number of clicks, geographic distribution). Consider authorization for this.
 
 2.  **Request Validation and Sanitization:**
