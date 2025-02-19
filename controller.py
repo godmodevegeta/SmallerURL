@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, redirect, request
 # from dotenv import dotenv_values
 from supabaseConfig import domain, numberOfCharacters, supabaseClient
 import random, re
@@ -27,6 +27,8 @@ def shorten():
             longURL = request.get_json().get("longURL")
             if longURL is None:
                 raise TypeError("longURL not found")
+            if not longURL.startswith(('http://', 'https://')):
+                longURL = 'https://' + longURL
         except Exception as e:
             print ("INSIDE TRY-EXCEPT BLOCK")
             return "Unable to find longURL, please check request body\n",400
