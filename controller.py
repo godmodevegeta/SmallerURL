@@ -1,11 +1,11 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, make_response
 # from dotenv import dotenv_values
 from supabaseConfig import domain, numberOfCharacters, supabaseClient
 import random, re
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename='log-statements.log', encoding='utf-8', level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -17,7 +17,9 @@ domain = domain
 
 @app.route("/api/hello/")
 def hello():
-    response = supabaseClient.table("planets").select("*").execute()
+    # response = supabaseClient.table("planets").select("*").execute()
+    response = make_response()
+    response.data = "Helloe there!"
     logger.info("The type is: ", type(response))
     return response
 

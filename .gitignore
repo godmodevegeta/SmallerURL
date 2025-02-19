@@ -1,3 +1,4 @@
 .flask-env
 __pycache__
 .env
+log-statements.log
