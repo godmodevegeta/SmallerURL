@@ -20,7 +20,7 @@ def hello():
     print("The type is: ", type(response))
     return response
 
-@app.route("/api/shorten", methods=["GET", "POST"])
+@app.route("/api/shorten/", methods=["GET", "POST"])
 def shorten():
     if request.method == 'POST':
         try:
@@ -32,8 +32,8 @@ def shorten():
         except Exception as e:
             print ("INSIDE TRY-EXCEPT BLOCK")
             return "Unable to find longURL, please check request body\n",400
-        if not(is_valid_url(longURL)):
-            return "URL not valid", 400
+        # if not(is_valid_url(longURL)):
+        #     return "URL not valid", 400
         
         if (longToSmall.get(longURL)):
             print (f"mapping for {longURL} already exists")
@@ -50,9 +50,14 @@ def shorten():
 
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
-    print ("searching for longURL for smallURL")
-    longURL = smallToLong.get(smallURL)
-    # print(smallToLong)
+    print (f"searching longURL for {smallURL}")
+    try:
+        longURL = smallToLong.get(smallURL)
+        if longURL is None:
+            raise ValueError(f"mapping for {smallURL} NOT FOUND")
+    except Exception as e:
+        return "Please first shorten the longURL"
+    print("small->long mappings:", smallToLong)
     print ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
   
