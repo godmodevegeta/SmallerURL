@@ -56,7 +56,7 @@ def redirectTo(smallURL):
         if longURL is None:
             raise ValueError(f"mapping for {smallURL} NOT FOUND")
     except Exception as e:
-        return "Please first shorten the longURL"
+        return "NO mappings found! Please first shorten the longURL first!"
     print("small->long mappings:", smallToLong)
     print ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
