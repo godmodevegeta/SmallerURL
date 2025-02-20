@@ -1,11 +1,13 @@
-from flask import Flask, request, redirect, make_response
+from flask import Flask, redirect, request, make_response
 # from dotenv import dotenv_values
-from supabaseConfig import domain, numberOfCharacters, supabaseClient
+from supabaseConfig import domain, numberOfCharacters
+# from supabaseConfig import supabaseClient
 import random, re
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='log-statements.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+
 
 app = Flask(__name__)
 
@@ -19,31 +21,35 @@ domain = domain
 def hello():
     # response = supabaseClient.table("planets").select("*").execute()
     response = make_response()
-    response.data = "Helloe there!"
+    response.data = "Hello, there! :)\n"
+    response.status_code = 200
     logger.info("The type is: ", type(response))
     return response
 
-@app.route("/api/shorten", methods=["GET", "POST"])
+@app.route("/api/shorten/", methods=["GET", "POST"])
 def shorten():
     if request.method == 'POST':
         try:
             longURL = request.get_json().get("longURL")
             if longURL is None:
                 raise TypeError("longURL not found")
+            if not longURL.startswith(('http://', 'https://')):
+                longURL = 'https://' + longURL
         except Exception as e:
             logger.info ("INSIDE TRY-EXCEPT BLOCK")
             return "Unable to find longURL, please check request body\n",400
-        if not(is_valid_url(longURL)):
-            return "URL not valid", 400
+        # if not(is_valid_url(longURL)):
+        #     return "URL not valid", 400
         
         if (longToSmall.get(longURL)):
-            logger.info (f"mapping for {longURL} already exists")
+            logger.debug (f"mapping for {longURL} already exists")
             return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
         smallURL = generateSmallURL()
-        logger.info(f'smallURL generated: {smallURL}\n')
+        logger.debug(f'smallURL generated: {smallURL}\n')
+
         longToSmall[longURL] = smallURL
         smallToLong[smallURL] = longURL
-        return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
+        return f"longURL: {longURL} and generated smallURL: {domain}api/redirect/{longToSmall[longURL]}\n"
         
     
     else:
@@ -51,16 +57,20 @@ def shorten():
 
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
-    logger.info ("searching for longURL for smallURL")
-    longURL = smallToLong.get(smallURL)
-    # logger.info(smallToLong)
+    logger.info (f"searching longURL for {smallURL}")
+    try:
+        longURL = smallToLong.get(smallURL)
+        if longURL is None:
+            raise ValueError(f"mapping for {smallURL} NOT FOUND")
+    except Exception as e:
+        return "NO mappings found! Please first shorten the longURL first!"
+    logger.debug("small->long mappings:", smallToLong)
     logger.info ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
   
 
 def generateSmallURL():
     randomString = random.random()
-    # logger.info(randomString , " is type " , type(randomString))
     randomString = int(randomString * numberOfCharacters)
     randomString = str(abs(randomString))
     if (smallToLong.get(randomString)):
