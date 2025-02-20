@@ -7,7 +7,7 @@ import logging, requests
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-external_call = False
+external_call = True
 
 app = Flask(__name__)
 
