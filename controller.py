@@ -8,6 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+
 app = Flask(__name__)
 
 # config = dotenv_values(".env")
@@ -22,7 +23,7 @@ def hello():
     response = make_response()
     response.data = "Hello, there! :)\n"
     response.status_code = 200
-    print("The type is: ", type(response))
+    logger.info("The type is: ", type(response))
     return response
 
 @app.route("/api/shorten/", methods=["GET", "POST"])
@@ -45,6 +46,7 @@ def shorten():
             return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
         smallURL = generateSmallURL()
         logger.debug(f'smallURL generated: {smallURL}\n')
+
         longToSmall[longURL] = smallURL
         smallToLong[smallURL] = longURL
         return f"longURL: {longURL} and generated smallURL: {domain}api/redirect/{longToSmall[longURL]}\n"
