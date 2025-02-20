@@ -1,13 +1,13 @@
 from flask import Flask, redirect, request, make_response
 # from dotenv import dotenv_values
-from supabaseConfig import domain, numberOfCharacters
+from supabaseConfig import domain, numberOfCharacters, randomStringURL
 # from supabaseConfig import supabaseClient
 import random, re
-import logging
+import logging, requests
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
+external_call = False
 
 app = Flask(__name__)
 
@@ -16,6 +16,7 @@ smallToLong = {}
 longToSmall = {}
 numberOfCharacters = numberOfCharacters
 domain = domain
+randomStringURL = randomStringURL
 
 @app.route("/api/hello/")
 def hello():
@@ -70,12 +71,26 @@ def redirectTo(smallURL):
   
 
 def generateSmallURL():
-    randomString = random.random()
-    randomString = int(randomString * numberOfCharacters)
-    randomString = str(abs(randomString))
-    if (smallToLong.get(randomString)):
-        logger.info(f"smallURL {randomString} already exists in map")
-        return generateSmallURL()
+    global external_call
+    logger.info(f"External call to randomStringAPI: {external_call}")
+    if external_call:
+        try:
+            randomString = requests.get(randomStringURL).json()[0]
+            if randomString is None:
+                raise TypeError("Call returned None\n")
+        except Exception as e:
+            logger.warning("External API returned None")
+            logger.warning("Turning external_call OFF")
+            external_call = False
+            return generateSmallURL()
+        logger.info(f"External Call to {randomStringURL} Successful with Response: {randomString}")
+    else:
+        randomString = random.random()
+        randomString = int(randomString * numberOfCharacters)
+        randomString = str(abs(randomString))
+        if (smallToLong.get(randomString)):
+            logger.info(f"smallURL {randomString} already exists in map")
+            return generateSmallURL()
     return randomString
 
 def is_valid_url(url: str) -> bool:
