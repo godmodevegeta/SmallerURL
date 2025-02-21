@@ -1,12 +1,12 @@
 from flask import Flask, redirect, request, make_response
 # from dotenv import dotenv_values
-from supabaseConfig import domain, numberOfCharacters, randomStringURL
+from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert
 # from supabaseConfig import supabaseClient
 import random, re
 import logging, requests
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 external_call = True
 
 app = Flask(__name__)
@@ -17,6 +17,7 @@ longToSmall = {}
 numberOfCharacters = numberOfCharacters
 domain = domain
 randomStringURL = randomStringURL
+supapostgresroute = True
 
 @app.route("/api/hello/")
 def hello():
@@ -48,9 +49,12 @@ def shorten():
         smallURL = generateSmallURL()
         logger.debug(f'smallURL generated: {smallURL}\n')
 
-        longToSmall[longURL] = smallURL
-        smallToLong[smallURL] = longURL
-        return f"longURL: {longURL} and generated smallURL: {domain}api/redirect/{longToSmall[longURL]}\n"
+        if supapostgresroute and insert(smallURL, longURL):
+            logger.info(f"inserted {longURL} to DATABASE")
+        else:
+            longToSmall[longURL] = smallURL
+            smallToLong[smallURL] = longURL            
+        return f"longURL: {longURL} and generated smallURL: {domain}api/redirect/{smallURL}\n"
         
     
     else:
