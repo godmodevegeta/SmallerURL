@@ -1,6 +1,6 @@
 from flask import Flask, redirect, request, make_response
 # from dotenv import dotenv_values
-from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert, fetch
+from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert, fetch_small, fetch_long
 # from supabaseConfig import supabaseClient
 import random, re
 import logging, requests
@@ -45,7 +45,7 @@ def shorten():
         
         if (supapostgresroute):
             logger.info("Fetching mappings from supabase")
-            smallURL = fetch(longURL)
+            smallURL = fetch_small(longURL)
             logger.info(f"smallURL found from supabase: {smallURL}")
             if smallURL != None:
                 logger.debug (f"mapping for {longURL} already exists in SUPABASE")
@@ -71,14 +71,24 @@ def shorten():
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
     logger.info (f"searching longURL for {smallURL}")
-    try:
-        longURL = smallToLong.get(smallURL)
-        if longURL is None:
-            raise ValueError(f"mapping for {smallURL} NOT FOUND")
-    except Exception as e:
-        return "NO mappings found! Please first shorten the longURL first!"
-    logger.debug("small->long mappings:", smallToLong)
-    logger.info ("found longURL: {longURL}".format(longURL=longURL))
+    if supapostgresroute:
+        try:
+            longURL = fetch_long(smallURL)
+            if longURL is None:
+                raise ValueError(f"mapping for {smallURL} NOT FOUND")
+        except Exception as e:
+            return "NO mappings found in SUPABASE! Please first shorten the longURL first!"
+        logger.info ("found longURL: {longURL} from supabase".format(longURL=longURL))
+
+    else:
+        try:
+            longURL = smallToLong.get(smallURL)
+            if longURL is None:
+                raise ValueError(f"mapping for {smallURL} NOT FOUND")
+        except Exception as e:
+            return "NO mappings found! Please first shorten the longURL first!"
+        logger.debug("small->long mappings:", smallToLong)
+        logger.info ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
   
 

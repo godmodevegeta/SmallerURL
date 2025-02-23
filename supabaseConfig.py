@@ -25,7 +25,7 @@ def insert(small: str, long: str):
     else:
         return False
 
-def fetch(long: str):
+def fetch_small(long: str):
     response = (
         supabaseClient.table(DBTable)
         .select("*")
@@ -33,7 +33,19 @@ def fetch(long: str):
         .execute().data
     )
     if len(response) > 0:
-        return response[0].get("small")
+        return response[0].get("small_code")
     else:
         return None
     
+def fetch_long(small: str):
+    response = (
+        supabaseClient.table(DBTable)
+        .select("*")
+        .eq("small_code", small)
+        .execute().data
+    )
+    if len(response) > 0:
+        return response[0].get("long_code")
+    else:
+        return None
+
