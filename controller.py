@@ -109,6 +109,9 @@ def generateSmallURL():
             logger.warning("Turning external_call OFF")
             external_call = False
             return generateSmallURL()
+        if fetch_long(randomString):
+            logger.info(f"{randomString} already exists in Supabase mapping. Generating ShortCode again.")
+            return generateSmallURL()
         logger.info(f"External Call to {randomStringURL} Successful with Response: {randomString}")
     else:
         randomString = random.random()
