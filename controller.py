@@ -21,7 +21,6 @@ supapostgresroute = True
 
 @app.route("/api/hello/")
 def hello():
-    # response = supabaseClient.table("planets").select("*").execute()
     response = make_response()
     response.data = "Hello, there! :)\n"
     response.status_code = 200
@@ -38,11 +37,13 @@ def shorten():
             if not longURL.startswith(('http://', 'https://')):
                 longURL = 'https://' + longURL
         except Exception as e:
-            logger.info ("INSIDE TRY-EXCEPT BLOCK")
+            logger.exception("exception: {e}".format(e=e))
             return "Unable to find longURL, please check request body\n",400
         # if not(is_valid_url(longURL)):
         #     return "URL not valid", 400
-        
+
+        # if small URL already exists in supabase
+        logger.info("External calls to Supabase:", supapostgresroute)
         if (supapostgresroute):
             logger.info("Fetching mappings from supabase")
             smallURL = fetch_small(longURL)
@@ -51,9 +52,11 @@ def shorten():
                 logger.debug (f"mapping for {longURL} already exists in SUPABASE")
                 return f"found url {longURL} and generated smallURL {domain}api/redirect/{smallURL}\n"
 
+        # if small URL already exists in in-memory table
         elif (longToSmall.get(longURL)):
             return in_memory_find(longURL)
             
+        # if no mappings exist in supabase or in-memory table
         smallURL = generateSmallURL()
         logger.debug(f'smallURL generated: {smallURL}\n')
 
@@ -66,7 +69,7 @@ def shorten():
         
     
     else:
-        return "<h1>Please input URL</h1>", 200
+        return "<h1>Please input URL in body</h1>", 200
 
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
