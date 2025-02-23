@@ -70,8 +70,8 @@ def shorten():
 
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
-    logger.info (f"searching longURL for {smallURL}")
     if supapostgresroute:
+        logger.info (f"searching longURL for {smallURL} in supabase")
         try:
             longURL = fetch_long(smallURL)
             if longURL is None:
@@ -81,6 +81,7 @@ def redirectTo(smallURL):
         logger.info ("found longURL: {longURL} from supabase".format(longURL=longURL))
 
     else:
+        logger.info (f"searching longURL for {smallURL} in memory hash-table")
         try:
             longURL = smallToLong.get(smallURL)
             if longURL is None:
