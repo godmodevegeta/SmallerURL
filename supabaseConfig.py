@@ -20,7 +20,7 @@ def insert(small: str, long: str):
     try:
         response = (
             supabaseClient.table(DBTable)
-            .insert({"small_code": small, "long": long})
+            .insert({"small_code": small, "long_code": long})
             .execute()
         )
     except Exception as e:
@@ -40,7 +40,7 @@ def fetch_small(long: str):
         .execute().data
     )
     if len(response) > 0:
-        logger.info(f"Call to Supabase successful with response {response.data}")
+        logger.info(f"Call to Supabase successful with response {response}")
         return response[0].get("small_code")
     else:
         return None
@@ -54,7 +54,7 @@ def fetch_long(small: str):
         .execute().data
     )
     if len(response) > 0:
-        logger.info(f"Call to Supabase successful with response {response.data}")
+        logger.info(f"Call to Supabase successful with response {response}")
         return response[0].get("long_code")
     else:
         return None
