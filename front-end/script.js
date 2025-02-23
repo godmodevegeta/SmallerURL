@@ -26,7 +26,7 @@ async function shortenUrl() {
             headers: {
                 'Content-Type': 'application/json', // Set the content type to JSON
             },
-            body: JSON.stringify({ url: longUrl }) // Send the long URL in the request body
+            body: JSON.stringify({ longURL: longUrl }) // Send the long URL in the request body as 'longURL'
         });
 
         if (!response.ok) { // Check if the response is not ok
