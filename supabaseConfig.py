@@ -15,7 +15,7 @@ def insert(small: str, long: str):
     try:
         response = (
             supabaseClient.table(DBTable)
-            .insert({"small": small, "long": long})
+            .insert({"small_code": small, "long": long})
             .execute()
         )
     except Exception as e:
@@ -29,7 +29,7 @@ def fetch(long: str):
     response = (
         supabaseClient.table(DBTable)
         .select("*")
-        .eq("long", long)
+        .eq("long_code", long)
         .execute().data
     )
     if len(response) > 0:
