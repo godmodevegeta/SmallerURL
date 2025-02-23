@@ -6,6 +6,14 @@ const shortUrlDiv = document.getElementById('shortUrl'); // Div to display the s
 const loader = document.getElementById('loader'); // Loader element to show during API call
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
+// Theme Toggle
+const themeSwitch = document.getElementById('themeSwitch');
+
+themeSwitch.addEventListener('change', () => {
+    document.body.classList.toggle('dark');
+    // Removed icon updates since the moon icon has been removed.
+});
+
 /**
  * Shortens the URL by making an API call
  */

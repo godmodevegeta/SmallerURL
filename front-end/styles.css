@@ -10,8 +10,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f0f0f0 0%, #d9d9d9 100%);
     padding: 20px;
+}
+
+body.dark {
+    background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%); /* darker background */
+    color: #e0e0e0; /* lighter text for contrast */
 }
 
 .container {
@@ -25,15 +30,25 @@ body {
     transition: transform 0.3s ease;
 }
 
+body.dark .container {
+    background: #1f1f1f; /* dark container background */
+    color: #f0f0f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* deeper shadow */
+}
+
 .container:hover {
     transform: translateY(-5px);
 }
 
 h1 {
-    color: #2d3748;
+    color: #333;
     margin-bottom: 1.5rem;
     font-size: 1.8rem;
     text-align: center;
+}
+
+body.dark h1 {
+    color: #f0f0f0; /* lighter header text for improved readability */
 }
 
 .input-group {
@@ -43,22 +58,33 @@ h1 {
 input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e2e8f0;
+    border: 2px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
+body.dark input {
+    background: #2c2c2c; /* darker input field */
+    border-color: #444; /* subtle border */
+    color: #e0e0e0;
+}
+
 input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #999;
+    box-shadow: 0 0 0 3px rgba(153, 153, 153, 0.1);
+}
+
+body.dark input:focus {
+    border-color: #666;
+    box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.3); /* noticeable focus state */
 }
 
 button {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #667eea;
+    background: #999;
     color: white;
     border: none;
     border-radius: 8px;
@@ -67,9 +93,17 @@ button {
     transition: all 0.3s ease;
 }
 
+body.dark button {
+    background: #444; /* adjusted button color */
+}
+
 button:hover {
-    background: #5a67d8;
+    background: #777;
     transform: translateY(-2px);
+}
+
+body.dark button:hover {
+    background: #555; /* slight brighten on hover */
 }
 
 button:active {
@@ -79,10 +113,14 @@ button:active {
 .result {
     margin-top: 1.5rem;
     padding: 1rem;
-    background: #f7fafc;
+    background: #f7f7f7;
     border-radius: 8px;
     display: none;
     animation: slideDown 0.3s ease;
+}
+
+body.dark .result {
+    background: #2c2c2c; /* better contrast for result area */
 }
 
 .result.show {
@@ -90,7 +128,7 @@ button:active {
 }
 
 .short-url {
-    color: #4a5568;
+    color: #555;
     word-break: break-all;
     cursor: pointer;
     padding: 0.5rem;
@@ -98,20 +136,99 @@ button:active {
     transition: all 0.2s ease;
 }
 
+body.dark .short-url {
+    color: #ccc; /* clear text for shortened URL */
+}
+
 .short-url:hover {
-    background: #edf2f7;
+    background: #e0e0e0;
+}
+
+body.dark .short-url:hover {
+    background: #3a3a3a; /* subtle hover effect */
 }
 
 .copy-notification {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #48bb78;
+    background: #4caf50;
     color: white;
     padding: 1rem;
     border-radius: 8px;
     display: none;
     animation: slideIn 0.3s ease;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.theme-switch {
+    display: none;
+}
+
+.theme-switch-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.theme-switch-label::before {
+    content: '';
+    width: 50px;
+    height: 26px;
+    background: #ccc;
+    border-radius: 26px;
+    margin-right: 10px;
+    transition: background 0.3s ease;
+    position: relative;
+}
+
+.theme-switch-label::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.theme-switch:checked + .theme-switch-label::before {
+    background: #777;
+}
+
+.theme-switch:checked + .theme-switch-label::after {
+    transform: translateX(24px);
+}
+
+.theme-switch-label span {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+body.dark .theme-switch-label span {
+    /* additional styling if needed */
+}
+
+.theme-toggle .sun {
+    display: none;
+}
+
+body.dark .theme-toggle .moon {
+    display: none;
+}
+
+body.dark .theme-toggle .sun {
+    display: inline;
 }
 
 @keyframes slideDown {
@@ -141,7 +258,7 @@ button:active {
     width: 20px;
     height: 20px;
     border: 2px solid #f3f3f3;
-    border-top: 2px solid #667eea;
+    border-top: 2px solid #999;
     border-radius: 50%;
     margin: 0 auto;
     animation: spin 1s linear infinite;
