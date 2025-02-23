@@ -9,11 +9,12 @@ numberOfCharacters: int = int(config.get('CHARACTERLIMIT'))
 domain: str = str(config.get('DOMAIN'))
 randomStringURL: str = str(config.get("RANDOMSTRINGURL"))
 supabaseClient: Client = create_client(url, key)
+DBTable: str = "SmallToLongUrl"
 
 def insert(small: str, long: str):
     try:
         response = (
-            supabaseClient.table("SmallToLongUrl")
+            supabaseClient.table(DBTable)
             .insert({"small": small, "long": long})
             .execute()
         )
@@ -24,3 +25,15 @@ def insert(small: str, long: str):
     else:
         return False
 
+def fetch(long: str):
+    response = (
+        supabaseClient.table(DBTable)
+        .select("*")
+        .eq("long", long)
+        .execute().data
+    )
+    if len(response) > 0:
+        return response[0].get("small")
+    else:
+        return None
+    

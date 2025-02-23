@@ -1,6 +1,6 @@
 from flask import Flask, redirect, request, make_response
 # from dotenv import dotenv_values
-from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert
+from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert, fetch
 # from supabaseConfig import supabaseClient
 import random, re
 import logging, requests
@@ -43,9 +43,17 @@ def shorten():
         # if not(is_valid_url(longURL)):
         #     return "URL not valid", 400
         
-        if (longToSmall.get(longURL)):
-            logger.debug (f"mapping for {longURL} already exists")
-            return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
+        if (supapostgresroute):
+            logger.info("Fetching mappings from supabase")
+            smallURL = fetch(longURL)
+            logger.info(f"smallURL found from supabase: {smallURL}")
+            if smallURL != None:
+                logger.debug (f"mapping for {longURL} already exists in SUPABASE")
+                return f"found url {longURL} and generated smallURL {domain}api/redirect/{smallURL}\n"
+
+        elif (longToSmall.get(longURL)):
+            return in_memory_find(longURL)
+            
         smallURL = generateSmallURL()
         logger.debug(f'smallURL generated: {smallURL}\n')
 
@@ -106,3 +114,7 @@ def is_valid_url(url: str) -> bool:
         r'(#.*)?$'  # fragment locator
     )
     return re.match(pattern, url) is not None
+
+def in_memory_find(longURL):
+    logger.debug (f"mapping for {longURL} already exists")
+    return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
