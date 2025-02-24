@@ -7,25 +7,43 @@ const loader = document.getElementById('loader'); // Loader element to show duri
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
 // Auto theme switch based on local time (7pm to 8am => dark mode; 8am to 7pm => light mode)
+// If user has manually set a theme, respect that instead.
 function autoSwitchTheme() {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour >= 19 || hour < 8) {
-        document.body.classList.add('dark');
-        themeSwitch.checked = true;
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        // Use saved manual override
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            themeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            themeSwitch.checked = false;
+        }
     } else {
-        document.body.classList.remove('dark');
-        themeSwitch.checked = false;
+        const now = new Date();
+        const hour = now.getHours();
+        if (hour >= 19 || hour < 8) {
+            document.body.classList.add('dark');
+            themeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            themeSwitch.checked = false;
+        }
     }
 }
 autoSwitchTheme(); // call on page load
 
-// Theme Toggle
+// Theme Toggle with manual override storage in localStorage
 const themeSwitch = document.getElementById('themeSwitch');
 
 themeSwitch.addEventListener('change', () => {
     document.body.classList.toggle('dark');
-    // Removed icon updates since the moon icon has been removed.
+    // Save manual override based on state
+    if (document.body.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+    } else {
+        localStorage.setItem('theme', 'light');
+    }
 });
 
 /**
