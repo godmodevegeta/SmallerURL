@@ -6,6 +6,20 @@ const shortUrlDiv = document.getElementById('shortUrl'); // Div to display the s
 const loader = document.getElementById('loader'); // Loader element to show during API call
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
+// Auto theme switch based on local time (7pm to 8am => dark mode; 8am to 7pm => light mode)
+function autoSwitchTheme() {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 19 || hour < 8) {
+        document.body.classList.add('dark');
+        themeSwitch.checked = true;
+    } else {
+        document.body.classList.remove('dark');
+        themeSwitch.checked = false;
+    }
+}
+autoSwitchTheme(); // call on page load
+
 // Theme Toggle
 const themeSwitch = document.getElementById('themeSwitch');
 
