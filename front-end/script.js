@@ -6,6 +6,9 @@ const shortUrlDiv = document.getElementById('shortUrl'); // Div to display the s
 const loader = document.getElementById('loader'); // Loader element to show during API call
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
+// Ensure themeSwitch is defined before calling autoSwitchTheme
+const themeSwitch = document.getElementById('themeSwitch');
+
 // Auto theme switch based on local time (7pm to 8am => dark mode; 8am to 7pm => light mode)
 // If user has manually set a theme, respect that instead.
 function autoSwitchTheme() {
@@ -34,7 +37,6 @@ function autoSwitchTheme() {
 autoSwitchTheme(); // call on page load
 
 // Theme Toggle with manual override storage in localStorage
-const themeSwitch = document.getElementById('themeSwitch');
 
 themeSwitch.addEventListener('change', () => {
     document.body.classList.toggle('dark');
