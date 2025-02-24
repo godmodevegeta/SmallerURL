@@ -1,5 +1,11 @@
 # SmallerURL
 
+## Demo
+
+Below is a demo of the application in action:
+
+![SmallerURL Demo](./demo.gif)
+
 Let's design a high-scale URL shortener. This is a classic scalability problem with some interesting challenges. We'll cover everything from the application layer to the database, keeping in mind the need to handle a large volume of requests.
 
 **I. Application Layer (API Endpoint and Logic)**
