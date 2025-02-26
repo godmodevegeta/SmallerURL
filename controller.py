@@ -50,7 +50,8 @@ def shorten():
             logger.info(f"smallURL found from supabase: {smallURL}")
             if smallURL != None:
                 logger.debug (f"mapping for {longURL} already exists in SUPABASE")
-                return jsonify({"longURL": longURL, "shortURL": f"{domain}api/redirect/{smallURL}"})
+                return jsonify({"longURL": longURL, 
+                                "shortURL": f"{domain}api/redirect/{smallURL}"})
 
         # if small URL already exists in in-memory table
         elif (longToSmall.get(longURL)):
@@ -65,7 +66,8 @@ def shorten():
         else:
             longToSmall[longURL] = smallURL
             smallToLong[smallURL] = longURL            
-        return jsonify({"longURL": longURL, "shortURL": f"{domain}api/redirect/{smallURL}"})
+        return jsonify({"longURL": longURL, 
+                        "shortURL": f"{domain}api/redirect/{smallURL}"})
         
     
     else:
