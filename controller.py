@@ -42,7 +42,7 @@ def shorten():
         # if not(is_valid_url(longURL)):
         #     return "URL not valid", 400
 
-        # if small URL already exists in supabase
+        # check if small URL already exists in supabase
         logger.info("External calls to Supabase:", supapostgresroute)
         if (supapostgresroute):
             logger.info("Fetching mappings from supabase")
@@ -69,7 +69,7 @@ def shorten():
         
     
     else:
-        return "<h1>Please input URL in body</h1>", 200
+        return jsonify({"message": "Please input URL in body"}), 200
 
 @app.route("/api/redirect/<smallURL>")
 def redirectTo(smallURL):
@@ -90,7 +90,7 @@ def redirectTo(smallURL):
             if longURL is None:
                 raise ValueError(f"mapping for {smallURL} NOT FOUND")
         except Exception as e:
-            return "NO mappings found! Please first shorten the longURL first!"
+            return jsonify({"error": "NO mappings found! Please first shorten the longURL first!"}), 404
         logger.debug("small->long mappings:", smallToLong)
         logger.info ("found longURL: {longURL}".format(longURL=longURL))
     return redirect(longURL)
