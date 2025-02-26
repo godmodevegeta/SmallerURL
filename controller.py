@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, make_response
+from flask import Flask, jsonify, redirect, request, make_response
 # from dotenv import dotenv_values
 from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert, fetch_small, fetch_long
 # from supabaseConfig import supabaseClient
@@ -24,7 +24,7 @@ def hello():
     response = make_response()
     response.data = "Hello, there! :)\n"
     response.status_code = 200
-    logger.info("The type is: ", type(response))
+    # logger.info("The type is: ", type(response))
     return response
 
 @app.route("/api/shorten/", methods=["GET", "POST"])
@@ -38,7 +38,7 @@ def shorten():
                 longURL = 'https://' + longURL
         except Exception as e:
             logger.exception("exception: {e}".format(e=e))
-            return "Unable to find longURL, please check request body\n",400
+            return jsonify({"error": "Unable to find longURL, please check request body"}), 400
         # if not(is_valid_url(longURL)):
         #     return "URL not valid", 400
 
@@ -50,7 +50,7 @@ def shorten():
             logger.info(f"smallURL found from supabase: {smallURL}")
             if smallURL != None:
                 logger.debug (f"mapping for {longURL} already exists in SUPABASE")
-                return f"found url {longURL} and generated smallURL {domain}api/redirect/{smallURL}\n"
+                return jsonify({"longURL": longURL, "shortURL": f"{domain}api/redirect/{smallURL}"})
 
         # if small URL already exists in in-memory table
         elif (longToSmall.get(longURL)):
@@ -65,7 +65,7 @@ def shorten():
         else:
             longToSmall[longURL] = smallURL
             smallToLong[smallURL] = longURL            
-        return f"longURL: {longURL} and generated smallURL: {domain}api/redirect/{smallURL}\n"
+        return jsonify({"longURL": longURL, "shortURL": f"{domain}api/redirect/{smallURL}"})
         
     
     else:
@@ -80,7 +80,7 @@ def redirectTo(smallURL):
             if longURL is None:
                 raise ValueError(f"mapping for {smallURL} NOT FOUND")
         except Exception as e:
-            return "NO mappings found in SUPABASE! Please first shorten the longURL first!"
+            return jsonify({"error": "NO mappings found in SUPABASE! Please first shorten the longURL first!"}), 404
         logger.info ("found longURL: {longURL} from supabase".format(longURL=longURL))
 
     else:
@@ -134,4 +134,7 @@ def is_valid_url(url: str) -> bool:
 
 def in_memory_find(longURL):
     logger.debug (f"mapping for {longURL} already exists")
-    return f"found url {longURL} and generated smallURL {domain}api/redirect/{longToSmall[longURL]}\n"
+    return jsonify({
+        "longURL": longURL,
+        "shortURL": f"{domain}api/redirect/{longToSmall[longURL]}"
+    }), 200
