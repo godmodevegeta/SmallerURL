@@ -77,8 +77,11 @@ async function shortenUrl() {
 
         const data = await response.json(); // Parse the JSON response
         
-        // Show result
-        displayShortUrl(data.shortCode); // Display the shortened URL
+        // New handling for API errors & using "shortURL" property
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        displayShortUrl(data.shortURL); // Display the shortened URL
 
     } catch (error) {
         console.error('Error:', error); // Log the error to the console
