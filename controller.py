@@ -16,8 +16,8 @@ longToSmall = {}
 numberOfCharacters = numberOfCharacters
 domain = domain
 randomStringURL = randomStringURL
-external_call = True
-supapostgresroute = True
+external_call = False
+supapostgresroute = False
 cacheEnabled = False
 
 @app.route("/api/hello/")
