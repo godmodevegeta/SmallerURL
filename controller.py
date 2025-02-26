@@ -18,6 +18,7 @@ domain = domain
 randomStringURL = randomStringURL
 external_call = True
 supapostgresroute = True
+cacheEnabled = False
 
 @app.route("/api/hello/")
 def hello():
