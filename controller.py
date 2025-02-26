@@ -7,7 +7,6 @@ import logging, requests
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-external_call = True
 
 app = Flask(__name__)
 
@@ -17,6 +16,7 @@ longToSmall = {}
 numberOfCharacters = numberOfCharacters
 domain = domain
 randomStringURL = randomStringURL
+external_call = True
 supapostgresroute = True
 
 @app.route("/api/hello/")
@@ -68,7 +68,6 @@ def shorten():
             smallToLong[smallURL] = longURL            
         return jsonify({"longURL": longURL, 
                         "shortURL": f"{domain}api/redirect/{smallURL}"})
-        
     
     else:
         return jsonify({"message": "Please input URL in body"}), 200
