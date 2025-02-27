@@ -16,7 +16,7 @@ longToSmall = {}
 numberOfCharacters = numberOfCharacters
 domain = domain
 randomStringURL = randomStringURL
-external_call = False
+external_call = True
 supapostgresroute = False
 cacheEnabled = False
 
@@ -30,6 +30,7 @@ def hello():
 
 @app.route("/api/shorten/", methods=["GET", "POST"])
 def shorten():
+    global supapostgresroute
     if request.method == 'POST':
         try:
             longURL = request.get_json().get("longURL")
@@ -44,7 +45,7 @@ def shorten():
         #     return "URL not valid", 400
 
         # check if small URL already exists in supabase
-        logger.info("External calls to Supabase:", supapostgresroute)
+        # logger.info("External calls to Supabase:", supapostgresroute)
         if (supapostgresroute):
             logger.info("Fetching mappings from supabase")
             smallURL = fetch_small(longURL)
@@ -62,9 +63,12 @@ def shorten():
         smallURL = generateSmallURL()
         logger.debug(f'smallURL generated: {smallURL}\n')
 
-        if supapostgresroute and insert(smallURL, longURL):
+        if supapostgresroute:
+            logger.info(f"insertion to Supabase initiated")
+            insert(smallURL, longURL)
             logger.info(f"inserted {longURL} to DATABASE")
         else:
+            logger.info("in-memory mapping initiated")
             longToSmall[longURL] = smallURL
             smallToLong[smallURL] = longURL            
         return jsonify({"longURL": longURL, 
@@ -135,7 +139,7 @@ def is_valid_url(url: str) -> bool:
     return re.match(pattern, url) is not None
 
 def in_memory_find(longURL):
-    logger.debug (f"mapping for {longURL} already exists")
+    logger.info (f"mapping for {longURL} already exists")
     return jsonify({
         "longURL": longURL,
         "shortURL": f"{domain}api/redirect/{longToSmall[longURL]}"
