@@ -27,9 +27,10 @@ def insert(small: str, long: str):
         return f"insertion of URL: {long} FAILED"
     if len(response.data) > 0:
         logger.info(f"Insertion of {response.data} complete in Suapabase")
-        return True
+        return response.data
     else:
-        return False
+        return None
+
 
 def fetch_small(long: str):
     logger.info("Initiating Call to Supabase")
