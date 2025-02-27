@@ -6,46 +6,25 @@ const shortUrlDiv = document.getElementById('shortUrl'); // Div to display the s
 const loader = document.getElementById('loader'); // Loader element to show during API call
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
-// Ensure themeSwitch is defined before calling autoSwitchTheme
+// Theme handling
 const themeSwitch = document.getElementById('themeSwitch');
 
-// Auto theme switch based on local time (7pm to 8am => dark mode; 8am to 7pm => light mode)
-// If user has manually set a theme, respect that instead.
 function autoSwitchTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        // Use saved manual override
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark');
-            themeSwitch.checked = true;
-        } else {
-            document.body.classList.remove('dark');
-            themeSwitch.checked = false;
-        }
-    } else {
-        const now = new Date();
-        const hour = now.getHours();
-        if (hour >= 19 || hour < 8) {
-            document.body.classList.add('dark');
-            themeSwitch.checked = true;
-        } else {
-            document.body.classList.remove('dark');
-            themeSwitch.checked = false;
-        }
-    }
+    // Always use time-based theme on page load/reload
+    const now = new Date();
+    const hour = now.getHours();
+    const isDarkTime = hour >= 19 || hour < 8;
+    document.body.classList.toggle('dark', isDarkTime);
+    themeSwitch.checked = isDarkTime;
 }
-autoSwitchTheme(); // call on page load
 
-// Theme Toggle with manual override storage in localStorage
+// Apply initial theme on page load
+autoSwitchTheme();
 
+// Handle manual theme changes (without persistence)
 themeSwitch.addEventListener('change', () => {
     document.body.classList.toggle('dark');
-    // Save manual override based on state
-    if (document.body.classList.contains('dark')) {
-        localStorage.setItem('theme', 'dark');
-    } else {
-        localStorage.setItem('theme', 'light');
-    }
+    // No localStorage saving, changes only last until page reload
 });
 
 /**
