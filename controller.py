@@ -1,146 +1,121 @@
 from flask import Flask, jsonify, redirect, request, make_response
-# from dotenv import dotenv_values
+from typing import Optional, Dict, Tuple, Callable, Any
+from dataclasses import dataclass
+from functools import wraps
+import logging
+import requests
 from supabaseConfig import domain, numberOfCharacters, randomStringURL, insert, fetch_small, fetch_long
-# from supabaseConfig import supabaseClient
-import random, re
-import logging, requests
 
-logger = logging.getLogger(__name__)
+# Initialize logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# config = dotenv_values(".env")
-smallToLong = {}
-longToSmall = {}
-numberOfCharacters = numberOfCharacters
-domain = domain
-randomStringURL = randomStringURL
-external_call = True
-supapostgresroute = False
-cacheEnabled = False
+@dataclass(frozen=True)
+class URLMapping:
+    long_url: str
+    short_code: str
+
+class Result:
+    def __init__(self, value, error=None):
+        self.value = value
+        self.error = error is None
+
+    @classmethod
+    def success(cls, value):
+        return cls(value)
+
+    @classmethod
+    def failure(cls, error):
+        return cls(None, error)
+
+def with_error_handling(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            logger.exception(f"Error in {f.__name__}: {str(e)}")
+            return jsonify({"error": str(e)}), 400
+    return wrapper
+
+def validate_url(url: str) -> Result:
+    """Pure function to validate URL format"""
+    if not url:
+        return Result.failure("URL cannot be empty")
+    if not isinstance(url, str):
+        return Result.failure("URL must be a string")
+    
+    normalized_url = url if url.startswith(('http://', 'https://')) else f'https://{url}'
+    return Result.success(normalized_url)
+
+def generate_short_code(existing_urls: Callable[[str], bool]) -> Result:
+    """Pure function to generate short code"""
+    try:
+        response = requests.get(randomStringURL)
+        if response.status_code != 200:
+            return Result.failure("Failed to generate short code")
+        
+        short_code = response.json()[0]
+        if existing_urls(short_code):
+            return generate_short_code(existing_urls)
+        
+        return Result.success(short_code)
+    except Exception as e:
+        return Result.failure(f"Error generating short code: {str(e)}")
+
+def create_short_url(short_code: str) -> str:
+    """Pure function to create full short URL"""
+    return f"{domain}api/redirect/{short_code}"
+
+@app.route("/api/shorten/", methods=["POST"])
+@with_error_handling
+def shorten():
+    """Handler for URL shortening"""
+    json_data = request.get_json()
+    if not json_data or 'longURL' not in json_data:
+        return jsonify({"error": "Missing longURL in request"}), 400
+
+    # Validate and normalize URL
+    url_result = validate_url(json_data['longURL'])
+    if not url_result.is_success:
+        return jsonify({"error": url_result.error}), 400
+    
+    long_url = url_result.value
+
+    # Check existing mapping
+    existing_short = fetch_small(long_url)
+    if existing_short:
+        return jsonify({
+            "longURL": long_url,
+            "shortURL": create_short_url(existing_short)
+        })
+
+    # Generate new short code
+    code_result = generate_short_code(lambda code: fetch_long(code) is not None)
+    if not code_result.is_success:
+        return jsonify({"error": code_result.error}), 500
+
+    # Store new mapping
+    if not insert(code_result.value, long_url):
+        return jsonify({"error": "Failed to store URL mapping"}), 500
+
+    return jsonify({
+        "longURL": long_url,
+        "shortURL": create_short_url(code_result.value)
+    })
+
+@app.route("/api/redirect/<short_code>")
+@with_error_handling
+def redirect_to(short_code: str):
+    """Handler for URL redirection"""
+    long_url = fetch_long(short_code)
+    if not long_url:
+        return jsonify({"error": "Short URL not found"}), 404
+    return redirect(long_url)
 
 @app.route("/api/hello/")
 def hello():
-    response = make_response()
-    response.data = "Hello, there! :)\n"
-    response.status_code = 200
-    # logger.info("The type is: ", type(response))
-    return response
-
-@app.route("/api/shorten/", methods=["GET", "POST"])
-def shorten():
-    global supapostgresroute
-    if request.method == 'POST':
-        try:
-            longURL = request.get_json().get("longURL")
-            if longURL is None:
-                raise TypeError("longURL not found")
-            if not longURL.startswith(('http://', 'https://')):
-                longURL = 'https://' + longURL
-        except Exception as e:
-            logger.exception("exception: {e}".format(e=e))
-            return jsonify({"error": "Unable to find longURL, please check request body"}), 400
-        # if not(is_valid_url(longURL)):
-        #     return "URL not valid", 400
-
-        # check if small URL already exists in supabase
-        # logger.info("External calls to Supabase:", supapostgresroute)
-        if (supapostgresroute):
-            logger.info("Fetching mappings from supabase")
-            smallURL = fetch_small(longURL)
-            logger.info(f"smallURL found from supabase: {smallURL}")
-            if smallURL != None:
-                logger.debug (f"mapping for {longURL} already exists in SUPABASE")
-                return jsonify({"longURL": longURL, 
-                                "shortURL": f"{domain}api/redirect/{smallURL}"})
-
-        # if small URL already exists in in-memory table
-        elif (longToSmall.get(longURL)):
-            return in_memory_find(longURL)
-            
-        # if no mappings exist in supabase or in-memory table
-        smallURL = generateSmallURL()
-        logger.debug(f'smallURL generated: {smallURL}\n')
-
-        if supapostgresroute:
-            logger.info(f"insertion to Supabase initiated")
-            insert(smallURL, longURL)
-            logger.info(f"inserted {longURL} to DATABASE")
-        else:
-            logger.info("in-memory mapping initiated")
-            longToSmall[longURL] = smallURL
-            smallToLong[smallURL] = longURL            
-        return jsonify({"longURL": longURL, 
-                        "shortURL": f"{domain}api/redirect/{smallURL}"})
-    
-    else:
-        return jsonify({"message": "Please input URL in body"}), 200
-
-@app.route("/api/redirect/<smallURL>")
-def redirectTo(smallURL):
-    if supapostgresroute:
-        logger.info (f"searching longURL for {smallURL} in supabase")
-        try:
-            longURL = fetch_long(smallURL)
-            if longURL is None:
-                raise ValueError(f"mapping for {smallURL} NOT FOUND")
-        except Exception as e:
-            return jsonify({"error": "NO mappings found in SUPABASE! Please first shorten the longURL first!"}), 404
-        logger.info ("found longURL: {longURL} from supabase".format(longURL=longURL))
-
-    else:
-        logger.info (f"searching longURL for {smallURL} in memory hash-table")
-        try:
-            longURL = smallToLong.get(smallURL)
-            if longURL is None:
-                raise ValueError(f"mapping for {smallURL} NOT FOUND")
-        except Exception as e:
-            return jsonify({"error": "NO mappings found! Please first shorten the longURL first!"}), 404
-        logger.debug("small->long mappings:", smallToLong)
-        logger.info ("found longURL: {longURL}".format(longURL=longURL))
-    return redirect(longURL)
-  
-
-def generateSmallURL():
-    global external_call
-    logger.info(f"External call to randomStringAPI: {external_call}")
-    if external_call:
-        try:
-            randomString = requests.get(randomStringURL).json()[0]
-            if randomString is None:
-                raise TypeError("Call returned None\n")
-        except Exception as e:
-            logger.warning("External API returned None")
-            logger.warning("Turning external_call OFF")
-            external_call = False
-            return generateSmallURL()
-        if fetch_long(randomString):
-            logger.info(f"{randomString} already exists in Supabase mapping. Generating ShortCode again.")
-            return generateSmallURL()
-        logger.info(f"External Call to {randomStringURL} Successful with Response: {randomString}")
-    else:
-        randomString = random.random()
-        randomString = int(randomString * numberOfCharacters)
-        randomString = str(abs(randomString))
-        if (smallToLong.get(randomString)):
-            logger.info(f"smallURL {randomString} already exists in map")
-            return generateSmallURL()
-    return randomString
-
-def is_valid_url(url: str) -> bool:
-    pattern = re.compile(
-        r'^(https?:\/\/)?'  # http:// or https://
-        r'(([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,6})'  # domain name
-        r'(\/[a-zA-Z0-9@:%._\+~#=]*)*'  # path
-        r'(\?[a-zA-Z0-9@:%._\+~#&=]*)?'  # query string
-        r'(#.*)?$'  # fragment locator
-    )
-    return re.match(pattern, url) is not None
-
-def in_memory_find(longURL):
-    logger.info (f"mapping for {longURL} already exists")
-    return jsonify({
-        "longURL": longURL,
-        "shortURL": f"{domain}api/redirect/{longToSmall[longURL]}"
-    }), 200
+    """Health check endpoint"""
+    return make_response("Hello, there! :)\n", 200)
