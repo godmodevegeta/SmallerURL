@@ -6,25 +6,44 @@ const shortUrlDiv = document.getElementById('shortUrl'); // Div to display the s
 const loader = document.getElementById('loader'); // Loader element to show during API call
 const copyNotification = document.getElementById('copyNotification'); // Notification for copy action
 
-// Theme handling
+// Auto theme switch based on local time (7pm to 8am => dark mode; 8am to 7pm => light mode)
+// If user has manually set a theme, respect that instead.
+function autoSwitchTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        // Use saved manual override
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            themeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            themeSwitch.checked = false;
+        }
+    } else {
+        const now = new Date();
+        const hour = now.getHours();
+        if (hour >= 19 || hour < 8) {
+            document.body.classList.add('dark');
+            themeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            themeSwitch.checked = false;
+        }
+    }
+}
+autoSwitchTheme(); // call on page load
+
+// Theme Toggle with manual override storage in localStorage
 const themeSwitch = document.getElementById('themeSwitch');
 
-function autoSwitchTheme() {
-    // Always use time-based theme on page load/reload
-    const now = new Date();
-    const hour = now.getHours();
-    const isDarkTime = hour >= 19 || hour < 8;
-    document.body.classList.toggle('dark', isDarkTime);
-    themeSwitch.checked = isDarkTime;
-}
-
-// Apply initial theme on page load
-autoSwitchTheme();
-
-// Handle manual theme changes (without persistence)
 themeSwitch.addEventListener('change', () => {
     document.body.classList.toggle('dark');
-    // No localStorage saving, changes only last until page reload
+    // Save manual override based on state
+    if (document.body.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+    } else {
+        localStorage.setItem('theme', 'light');
+    }
 });
 
 /**
@@ -56,11 +75,8 @@ async function shortenUrl() {
 
         const data = await response.json(); // Parse the JSON response
         
-        // New handling for API errors & using "shortURL" property
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        displayShortUrl(data.shortURL); // Display the shortened URL
+        // Show result
+        displayShortUrl(data.shortCode); // Display the shortened URL
 
     } catch (error) {
         console.error('Error:', error); // Log the error to the console
